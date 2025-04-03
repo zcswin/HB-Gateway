@@ -1,0 +1,78 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  cloud:
+    gateway:
+      routes:
+        - id: service1_swagger_route
+          uri: lb://service1
+          predicates:
+            - Path=/service1/swagger-ui/**
+          filters:
+            - RewritePath=/service1/swagger-ui/(?<segment>.*), /swagger-ui/$\{segment}
+        - id: service1_api_docs_route
+          uri: lb://service1
+          predicates:
+            - Path=/service1/v2/api-docs
+          filters:
+            - RewritePath=/service1/v2/api-docs, /v2/api-docs
+        - id: service2_swagger_route
+          uri: lb://service2
+          predicates:
+            - Path=/service2/swagger-ui/**
+          filters:
+            - RewritePath=/service2/swagger-ui/(?<segment>.*), /swagger-ui/$\{segment}
+        - id: service2_api_docs_route
+          uri: lb://service2
+          predicates:
+            - Path=/service2/v2/api-docs
+          filters:
+            - RewritePath=/service2/v2/api-docs, /v2/api-docs
+            
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**
+        - id: service_provider_route
+          uri: lb://service-provider
+          predicates:
+            - Path=/service-provider/**
+          filters:
+            - RewritePath=/service-provider/(?<segment>.*), /$\{segment}
+        - id: service_consumer_route
+          uri: lb://service-consumer
+          predicates:
+            - Path=/service-consumer/**
+          filters:
+            - RewritePath=/service-consumer/(?<segment>.*), /$\{segment}
+  eureka:
+    client:
+      service-url:
+        defaultZone: http://localhost:8761/eureka/
+
+management:
+  info: # 显示任意的应用信息，默认关闭  springBoot版本：2.7.5 CURRENT  GA如果是更低一些的版本默认是开启的
+    env:
+      enabled: true
+  endpoints:
+    web:
+      base-path: /actuator  #配置端点访问前缀
+      exposure:
+        include: info,health  #只暴露info,health两个端点; “*” 表示暴露所有端点
+        exclude: health  #可以将以暴露的端点排除（不暴露）
+info:
+  app:
+    name: "@project.name@"
+    encoding: "@project.build.sourceEncoding@"
+    java:
+      source: "@java.version@"
+      target: "@java.version@"
+logging:
+  level:
+    org.springframework.boot.actuate.info: DEBUG
