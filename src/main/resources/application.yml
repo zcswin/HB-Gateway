@@ -25,12 +25,11 @@ spring:
             - AddRequestHeader=X-Consumer-Request-Id, 789012
             - RewritePath=/ui-(?<service>[^/]+)/(?<segment>.*), /service-$\{service}/$\{segment}
 
-        - id: default-service-mapping
-          uri: lb://HB-QMS-Provider
-          predicates:
+        - id: default-service-mapping # 默认路由
+          uri: lb://HB-QMS-Provider # 默认服务
+          predicates: # 路由断言，用于匹配请求
             - Path=/** # 匹配所有其他路径
-          filters:
-            - RewritePath=/.*, /$\{path}
+            
       discovery:
         client:
           serviceUrl:
