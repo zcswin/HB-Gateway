@@ -1,5 +1,5 @@
 {"properties": [{
-  "name": "spring.cloud.gateway.discovery.client.service-url.default-zone",
+  "name": "spring.webflux.pathmatch.matching-strategy",
   "type": "java.lang.String",
-  "description": "A description for 'spring.cloud.gateway.discovery.client.service-url.default-zone'"
+  "description": "A description for 'spring.webflux.pathmatch.matching-strategy'"
 }]}
