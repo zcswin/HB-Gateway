@@ -31,10 +31,10 @@ spring:
             - Path=/** # 匹配所有其他路径
           filters:
             - RewritePath=/.*, /$\{path}
-    discovery:
-      client:
-        serviceUrl:
-          defaultZone: http://localhost:8761/eureka/ # Eureka服务注册中心地址
+      discovery:
+        client:
+          serviceUrl:
+            defaultZone: http://localhost:8761/eureka/ # Eureka服务注册中心地址
 
 management:
   info: # 显示任意的应用信息，默认关闭  springBoot版本：2.7.5 CURRENT  GA如果是更低一些的版本默认是开启的
@@ -53,6 +53,6 @@ info:
     java:
       source: "@java.version@"
       target: "@java.version@"
-logging:
-  level:
-    org.springframework.boot.actuate.info: DEBUG
+#logging:
+#  level:
+#    org.springframework.boot.actuate.info: DEBUG
