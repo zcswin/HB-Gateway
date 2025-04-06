@@ -9,52 +9,23 @@ spring:
       matching-strategy: ANT_PATH_MATCHER
   cloud:
     gateway:
-      routes:
-        - id: service1_swagger_route
-          uri: lb://service1
-          predicates:
-            - Path=/service1/swagger-ui/**
-          filters:
-            - RewritePath=/service1/swagger-ui/(?<segment>.*), /swagger-ui/$\{segment}
-        - id: service1_api_docs_route
-          uri: lb://service1
-          predicates:
-            - Path=/service1/v2/api-docs
-          filters:
-            - RewritePath=/service1/v2/api-docs, /v2/api-docs
-        - id: service2_swagger_route
-          uri: lb://service2
-          predicates:
-            - Path=/service2/swagger-ui/**
-          filters:
-            - RewritePath=/service2/swagger-ui/(?<segment>.*), /swagger-ui/$\{segment}
-        - id: service2_api_docs_route
-          uri: lb://service2
-          predicates:
-            - Path=/service2/v2/api-docs
-          filters:
-            - RewritePath=/service2/v2/api-docs, /v2/api-docs
-            
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/users/**
-        - id: service_provider_route
-          uri: lb://service-provider
-          predicates:
-            - Path=/service-provider/**
-          filters:
-            - RewritePath=/service-provider/(?<segment>.*), /$\{segment}
-        - id: service_consumer_route
+      routes:            
+        - id: product-service # 路由ID，唯一标识
+          uri: lb://service-provider # 路由目标服务，lb表示负载均衡
+          predicates: # 路由断言，用于匹配请求
+            - Path=/service-provider/** # 匹配路径以/products/开头的请求
+          filters: # 路由过滤器
+            - AddRequestHeader=X-Request-Id, 123456 # 添加请求头
+        - id: consumer-service # 新增Consumer服务的路由
           uri: lb://service-consumer
           predicates:
-            - Path=/service-consumer/**
+            - Path=/service-consumer/** # 匹配路径以/consumer/开头的请求
           filters:
-            - RewritePath=/service-consumer/(?<segment>.*), /$\{segment}
-  eureka:
-    client:
-      service-url:
-        defaultZone: http://localhost:8761/eureka/
+            - AddRequestHeader=X-Consumer-Request-Id, 789012
+    discovery:
+      client:
+        serviceUrl:
+          defaultZone: http://localhost:8761/eureka/ # Eureka服务注册中心地址
 
 management:
   info: # 显示任意的应用信息，默认关闭  springBoot版本：2.7.5 CURRENT  GA如果是更低一些的版本默认是开启的
