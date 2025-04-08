@@ -14,6 +14,7 @@ spring:
       roles: ADMIN
   cloud:
     gateway:
+
 #      httpclient:        
 #         encode-url: ALWAYS # 强制启用URL编码
       routes:
@@ -44,6 +45,7 @@ spring:
 #          uri: lb://HB-QMS-Provider # 默认服务
 #          predicates: # 路由断言，用于匹配请求
 #            - Path=/** # 匹配所有其他路径                   
+
             
 eureka:
   client:
@@ -62,7 +64,7 @@ management:
   info: # 显示任意的应用信息，默认关闭  springBoot版本：2.7.5 CURRENT  GA如果是更低一些的版本默认是开启的
     env:
       enabled: true
-    
+  
 springdoc:
   packages-to-scan: charles.zhou.gateway.controller
   swagger-ui:
@@ -81,8 +83,8 @@ springdoc:
     enabled: true
     tryItOutEnabled: true
 #  api-docs:
-#    path: /v3/api-docs
-    
+#    path: /v3/api-docs    
+
 info:
   app:
     name: "@project.name@"
@@ -90,12 +92,8 @@ info:
     java:
       source: "@java.version@"
       target: "@java.version@"
-      
-#logging:
-#  level:
-#    org.springframework.web: TRACE
-#    org.springframework.context: DEBUG
-#logging:
-#  level:
-#    org.springframework.cloud.gateway: TRACE
-#    org.springdoc: DEBUG
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springdoc: INFO
