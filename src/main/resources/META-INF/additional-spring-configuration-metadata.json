@@ -1,5 +1,17 @@
-{"properties": [{
-  "name": "spring.webflux.pathmatch.matching-strategy",
-  "type": "java.lang.String",
-  "description": "A description for 'spring.webflux.pathmatch.matching-strategy'"
-}]}
+{"properties": [
+  {
+    "name": "spring.webflux.pathmatch.matching-strategy",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.webflux.pathmatch.matching-strategy'"
+  },
+  {
+    "name": "springdoc.cache.validator",
+    "type": "java.lang.String",
+    "description": "A description for 'springdoc.cache.validator'"
+  },
+  {
+    "name": "springdoc.swagger-ui.cache-control",
+    "type": "java.lang.String",
+    "description": "A description for 'springdoc.swagger-ui.cache-control'"
+  }
+]}

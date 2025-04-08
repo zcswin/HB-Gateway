@@ -26,7 +26,7 @@ public class SecurityConfig {
                             "/favicon.ico",
                             "/actuator/**"
                         ).permitAll()
-                        .anyExchange().authenticated()
+                        .anyExchange().permitAll()
             )            
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)

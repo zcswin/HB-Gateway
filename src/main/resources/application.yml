@@ -14,10 +14,19 @@ spring:
       roles: ADMIN
   cloud:
     gateway:
-
 #      httpclient:        
 #         encode-url: ALWAYS # 强制启用URL编码
       routes:
+        # OpenAPI文档路由（重点修正！）
+        - id: provider-swagger
+          uri: http://localhost:8081  # 强制指定地址避免负载均衡干扰
+          predicates:
+            - Path=/v3/api-docs/service-provider
+          filters:
+            # 精确路径重写（使用完整正则）
+            - RewritePath=/v3/api-docs/service-provider/?.*, /v3/api-docs
+            #- AddResponseHeader=Cache-Control, no-store, no-cache, must-revalidate # 添加响应头禁用缓存
+         # order: -1  # 提高优先级 
         - id: gateway-swagger
           uri: http://localhost:${server.port}
           predicates:
@@ -25,27 +34,30 @@ spring:
           filters:
             - RewritePath=/v3/api-docs/gateway/?(?<query>.*), /v3/api-docs?group=gateway&$\{query}
             - AddResponseHeader=Cache-Control, no-store, no-cache, must-revalidate # 添加响应头禁用缓存
-                           
-#        - id: provider-service # 路由ID，唯一标识
-#          uri: lb://service-provider # 路由目标服务，lb表示负载均衡
-#          predicates: # 路由断言，用于匹配请求
-#            - Path=/ui-provider/** # 匹配路径以/products/开头的请求
-#          filters: # 路由过滤器
-#            - AddRequestHeader=X-Request-Id, 123456 # 添加请求头
-#            - RewritePath=/ui-(?<service>[^/]+)/(?<segment>.*), /service-$\{service}/$\{segment}
-#        - id: consumer-service # 新增Consumer服务的路由
-#          uri: lb://service-consumer
-#          predicates:
-#            - Path=/ui-consumer/** # 匹配路径以/consumer/开头的请求
-#          filters:
-#            - AddRequestHeader=X-Consumer-Request-Id, 789012
-#            - RewritePath=/ui-(?<service>[^/]+)/(?<segment>.*), /service-$\{service}/$\{segment}
-#
+                                       
+        - id: provider-service # 路由ID，唯一标识
+          uri: lb://service-provider # 路由目标服务，lb表示负载均衡
+          predicates: # 路由断言，用于匹配请求
+            - Path=/api/service-provider/** #, /service-provider/v3/api-docs/** 
+          filters: # 路由过滤器
+            - StripPrefix=1
+            #- AddRequestHeader=X-Request-Id, 123456 # 添加请求头
+            #- RewritePath=/api/(?<service>[^/]+)/(?<segment>.*), /$\{service}/$\{segment}
+            #- RewritePath=/ui-(?<service>[^/]+)/(?<segment>.*), /service-$\{service}/$\{segment}
+                       
+        - id: consumer-service # 新增Consumer服务的路由
+          uri: lb://service-consumer
+          predicates:
+            - Path=/api/service-consumer/**, /service-consumer/v3/api-docs/** 
+          filters:
+            - StripPrefix=1
+            #- AddRequestHeader=X-Consumer-Request-Id, 789012
+            #- RewritePath=/api/(?<service>[^/]+)/(?<segment>.*), /$\{service}/$\{segment}
+            #- RewritePath=/ui-(?<service>[^/]+)/(?<segment>.*), /service-$\{service}/$\{segment}
 #        - id: default-service-mapping # 默认路由
 #          uri: lb://HB-QMS-Provider # 默认服务
 #          predicates: # 路由断言，用于匹配请求
-#            - Path=/** # 匹配所有其他路径                   
-
+#            - Path=/** # 匹配所有其他路径                  
             
 eureka:
   client:
@@ -67,14 +79,20 @@ management:
   
 springdoc:
   packages-to-scan: charles.zhou.gateway.controller
+  cache:
+    disabled: true  # 生产环境启用缓存
+    validator: false
   swagger-ui:
-    path: /
-    config-url: /v3/api-docs/swagger-config
+    cache-control: no-store, no-cache, must-revalidate # 控制UI缓存
+    path: /swagger-ui.html # 显式声明访问路径
+    config-url: /v3/api-docs/swagger-config?nocache
     urls:
+      - url: /v3/api-docs/service-consumer  # 对应网关路由路径
+        name: 服务消费者
+      - url: /v3/api-docs/service-provider  # 对应网关路由路径
+        name: 服务提供者
       - url: /v3/api-docs/gateway
-        name: Gateway
-    cache:
-      validator: false
+        name: 网关服务商
     operationsSorter: method
     tagsSorter: alpha
     persistAuthorization: true
@@ -82,9 +100,11 @@ springdoc:
     defaultModelExpandDepth: 3
     enabled: true
     tryItOutEnabled: true
-#  api-docs:
-#    path: /v3/api-docs    
-
+  api-docs:
+    path: /v3/api-docs # 显式指定网关自身文档路径（已禁用）
+    enabled: true
+    groups:
+        enabled: true
 info:
   app:
     name: "@project.name@"

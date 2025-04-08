@@ -28,8 +28,6 @@ public class GatewayHealthController {
         return Mono.just("OK,Gateway is Healthy");
     }
 
-
-
     @Operation(summary = "动态路由示例", description = "添加新路由规则")
     @PostMapping("/routes")
     public Mono<String> addRoute(@RequestBody RouteDefinition route) {
