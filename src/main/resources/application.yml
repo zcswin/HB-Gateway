@@ -19,14 +19,25 @@ spring:
       routes:
         # OpenAPI文档路由（重点修正！）
         - id: provider-swagger
-          uri: http://localhost:8081  # 强制指定地址避免负载均衡干扰
+          uri: lb://service-provider  # 强制指定地址避免负载均衡干扰
           predicates:
             - Path=/v3/api-docs/service-provider
           filters:
             # 精确路径重写（使用完整正则）
             - RewritePath=/v3/api-docs/service-provider/?.*, /v3/api-docs
             #- AddResponseHeader=Cache-Control, no-store, no-cache, must-revalidate # 添加响应头禁用缓存
-         # order: -1  # 提高优先级 
+        - id: consumer-swagger
+          uri: lb://service-consumer  # 强制指定地址避免负载均衡干扰
+          predicates:
+            - Path=/v3/api-docs/service-consumer
+          filters:  
+            - RewritePath=/v3/api-docs/service-consumer/?.*, /v3/api-docs
+        - id: hb-qms-swagger
+          uri: lb://hb-qms-provider  
+          predicates:
+            - Path=/v2/api-docs/hb-qms-provider
+          filters:
+            - RewritePath=/v2/api-docs/hb-qms-provider/?.*, /v2/api-docs
         - id: gateway-swagger
           uri: http://localhost:${server.port}
           predicates:
@@ -34,6 +45,8 @@ spring:
           filters:
             - RewritePath=/v3/api-docs/gateway/?(?<query>.*), /v3/api-docs?group=gateway&$\{query}
             - AddResponseHeader=Cache-Control, no-store, no-cache, must-revalidate # 添加响应头禁用缓存
+            
+            
                                        
         - id: provider-service # 路由ID，唯一标识
           uri: lb://service-provider # 路由目标服务，lb表示负载均衡
@@ -43,17 +56,19 @@ spring:
             - StripPrefix=1
             #- AddRequestHeader=X-Request-Id, 123456 # 添加请求头
             #- RewritePath=/api/(?<service>[^/]+)/(?<segment>.*), /$\{service}/$\{segment}
-            #- RewritePath=/ui-(?<service>[^/]+)/(?<segment>.*), /service-$\{service}/$\{segment}
-                       
+            #- RewritePath=/ui-(?<service>[^/]+)/(?<segment>.*), /service-$\{service}/$\{segment}                       
         - id: consumer-service # 新增Consumer服务的路由
           uri: lb://service-consumer
           predicates:
             - Path=/api/service-consumer/**, /service-consumer/v3/api-docs/** 
           filters:
             - StripPrefix=1
-            #- AddRequestHeader=X-Consumer-Request-Id, 789012
-            #- RewritePath=/api/(?<service>[^/]+)/(?<segment>.*), /$\{service}/$\{segment}
-            #- RewritePath=/ui-(?<service>[^/]+)/(?<segment>.*), /service-$\{service}/$\{segment}
+        - id: hb-qms-service # 新增Consumer服务的路由
+          uri: lb://hb-qms-provider
+          predicates:
+            - Path=/api/hb-qms-provider/**, /hb-qms-provider/v3/api-docs/** 
+          filters:
+            - StripPrefix=1                       
 #        - id: default-service-mapping # 默认路由
 #          uri: lb://HB-QMS-Provider # 默认服务
 #          predicates: # 路由断言，用于匹配请求
@@ -93,6 +108,8 @@ springdoc:
         name: 服务提供者
       - url: /v3/api-docs/gateway
         name: 网关服务商
+      - url: /v2/api-docs/hb-qms-provider
+        name: 博恩QMS
     operationsSorter: method
     tagsSorter: alpha
     persistAuthorization: true
