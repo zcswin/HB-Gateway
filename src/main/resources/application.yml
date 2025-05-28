@@ -2,6 +2,8 @@ server:
   port: ${APP_PORT:8080}
 
 spring:
+  profiles:
+    active: default
   application:
     name: api-gateway
   webflux:
@@ -14,8 +16,6 @@ spring:
       roles: ADMIN
   cloud:
     gateway:
-#      httpclient:        
-#         encode-url: ALWAYS # 强制启用URL编码
       routes:
         # OpenAPI文档路由（重点修正！）
         - id: provider-swagger
@@ -25,7 +25,6 @@ spring:
           filters:
             # 精确路径重写（使用完整正则）
             - RewritePath=/v3/api-docs/service-provider/?.*, /v3/api-docs
-            #- AddResponseHeader=Cache-Control, no-store, no-cache, must-revalidate # 添加响应头禁用缓存
         - id: consumer-swagger
           uri: lb://service-consumer  # 强制指定地址避免负载均衡干扰
           predicates:
@@ -53,10 +52,7 @@ spring:
           predicates: # 路由断言，用于匹配请求
             - Path=/api/service-provider/** #, /service-provider/v3/api-docs/** 
           filters: # 路由过滤器
-            - StripPrefix=1
-            #- AddRequestHeader=X-Request-Id, 123456 # 添加请求头
-            #- RewritePath=/api/(?<service>[^/]+)/(?<segment>.*), /$\{service}/$\{segment}
-            #- RewritePath=/ui-(?<service>[^/]+)/(?<segment>.*), /service-$\{service}/$\{segment}                       
+            - StripPrefix=1                  
         - id: consumer-service # 新增Consumer服务的路由
           uri: lb://service-consumer
           predicates:
@@ -68,11 +64,7 @@ spring:
           predicates:
             - Path=/api/hb-qms-provider/**, /hb-qms-provider/v3/api-docs/** 
           filters:
-            - StripPrefix=1                       
-#        - id: default-service-mapping # 默认路由
-#          uri: lb://HB-QMS-Provider # 默认服务
-#          predicates: # 路由断言，用于匹配请求
-#            - Path=/** # 匹配所有其他路径                  
+            - StripPrefix=1                                    
             
 eureka:
   client:
@@ -88,7 +80,7 @@ management:
       base-path: /actuator  #配置端点访问前缀
       exposure:
         include: health,info,env,metrics
-  info: # 显示任意的应用信息，默认关闭  springBoot版本：2.7.5 CURRENT  GA如果是更低一些的版本默认是开启的
+  info:
     env:
       enabled: true
   
@@ -99,7 +91,7 @@ springdoc:
     validator: false
   swagger-ui:
     cache-control: no-store, no-cache, must-revalidate # 控制UI缓存
-    path: /swagger-ui.html # 显式声明访问路径
+    path: / # 显式声明访问路径 /swagger-ui.html
     config-url: /v3/api-docs/swagger-config?nocache
     urls:
       - url: /v3/api-docs/service-consumer  # 对应网关路由路径
@@ -132,5 +124,5 @@ info:
 
 logging:
   level:
-    org.springframework.cloud.gateway: INFO
-    org.springdoc: INFO
+    '[org.springframework.cloud.gateway]': INFO
+    '[org.springdoc]': INFO
