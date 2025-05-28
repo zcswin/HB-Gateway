@@ -31,12 +31,19 @@ spring:
             - Path=/v3/api-docs/service-consumer
           filters:  
             - RewritePath=/v3/api-docs/service-consumer/?.*, /v3/api-docs
+        - id: flink-swagger
+          uri: lb://flink-service  
+          predicates:
+            - Path=/v3/api-docs/flink-service
+          filters:
+            - RewritePath=/v3/api-docs/flink-service/?.*, /v3/api-docs     
         - id: hb-qms-swagger
           uri: lb://hb-qms-provider  
           predicates:
             - Path=/v2/api-docs/hb-qms-provider
           filters:
             - RewritePath=/v2/api-docs/hb-qms-provider/?.*, /v2/api-docs
+             
         - id: gateway-swagger
           uri: http://localhost:${server.port}
           predicates:
@@ -44,7 +51,8 @@ spring:
           filters:
             - RewritePath=/v3/api-docs/gateway/?(?<query>.*), /v3/api-docs?group=gateway&$\{query}
             - AddResponseHeader=Cache-Control, no-store, no-cache, must-revalidate # 添加响应头禁用缓存
-            
+
+           
             
                                        
         - id: provider-service # 路由ID，唯一标识
@@ -56,15 +64,21 @@ spring:
         - id: consumer-service # 新增Consumer服务的路由
           uri: lb://service-consumer
           predicates:
-            - Path=/api/service-consumer/**, /service-consumer/v3/api-docs/** 
+            - Path=/api/service-consumer/** #, /service-consumer/v3/api-docs/** 
           filters:
             - StripPrefix=1
+        - id: flink-service # 新增Consumer服务的路由
+          uri: lb://flink-service
+          predicates:
+            - Path=/api/flink-service/** #, /flink-service/v3/api-docs/** 
+          filters:
+            - StripPrefix=1         
         - id: hb-qms-service # 新增Consumer服务的路由
           uri: lb://hb-qms-provider
           predicates:
-            - Path=/api/hb-qms-provider/**, /hb-qms-provider/v3/api-docs/** 
+            - Path=/api/hb-qms-provider/** #, /hb-qms-provider/v2/api-docs/** 
           filters:
-            - StripPrefix=1                                    
+            - StripPrefix=1                                
             
 eureka:
   client:
@@ -94,9 +108,11 @@ springdoc:
     path: / # 显式声明访问路径 /swagger-ui.html
     config-url: /v3/api-docs/swagger-config?nocache
     urls:
-      - url: /v3/api-docs/service-consumer  # 对应网关路由路径
+      - url: /v3/api-docs/flink-service  
+        name: 消息采集器
+      - url: /v3/api-docs/service-consumer  
         name: 服务消费者
-      - url: /v3/api-docs/service-provider  # 对应网关路由路径
+      - url: /v3/api-docs/service-provider 
         name: 服务提供者
       - url: /v3/api-docs/gateway
         name: 网关服务商
